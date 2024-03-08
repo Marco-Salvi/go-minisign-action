@@ -15,6 +15,7 @@ func main() {
 	inputPassword := os.Getenv("INPUT_PASSWORD")
 	// Get the INPUT_RAW_PRIVATE_KEY environment variable
 	inputRawPrivateKey := os.Getenv("INPUT_RAW_PRIVATE_KEY")
+	outputSignatureName := os.Getenv("OUTPUT_SIGNATURE_NAME")
 
 	// If any of the env variables are not set, print an error and exit
 	// if fileToSign == "" {
@@ -72,13 +73,13 @@ func main() {
 		fmt.Println("Signature generated successfully")
 
 		// Write the signature to a file
-		err = os.WriteFile("signature.minisig", signature, 0644)
+		err = os.WriteFile(outputSignatureName+".minisig", signature, 0644)
 		if err != nil {
 			fmt.Println("Failed to write the signature to a file: ", err)
 			os.Exit(1)
 		}
 
-		fmt.Println("Signature written to signature.minisig")
+		fmt.Println("Signature written to " + outputSignatureName + ".minisig")
 
 		return
 	}
