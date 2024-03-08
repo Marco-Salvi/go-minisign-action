@@ -8,18 +8,18 @@ import (
 )
 
 func main() {
-	// Get the file to sign from the env variable
-	fileToSign := os.Getenv("FILE_TO_SIGN_PATH")
+	// // Get the file to sign from the env variable
+	// fileToSign := os.Getenv("FILE_TO_SIGN_PATH")
 	// Get the INPUT_PASSWORD environment variable
 	inputPassword := os.Getenv("INPUT_PASSWORD")
 	// Get the INPUT_RAW_PRIVATE_KEY environment variable
 	inputRawPrivateKey := os.Getenv("INPUT_RAW_PRIVATE_KEY")
 
 	// If any of the env variables are not set, print an error and exit
-	if fileToSign == "" {
-		fmt.Println("Error: FILE_TO_SIGN_PATH is not set")
-		os.Exit(1)
-	}
+	// if fileToSign == "" {
+	// 	fmt.Println("Error: FILE_TO_SIGN_PATH is not set")
+	// 	os.Exit(1)
+	// }
 	if inputPassword == "" {
 		fmt.Println("Error: INPUT_PASSWORD is not set")
 		os.Exit(1)
