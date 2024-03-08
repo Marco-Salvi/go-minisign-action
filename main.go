@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"aead.dev/minisign"
 )
@@ -39,22 +40,31 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Load the file to sign as bytes
-	fileBytes, err := os.ReadFile("*/bin/*")
+	files, err := filepath.Glob("../build/bin/*")
 	if err != nil {
-		fmt.Println("Failed to read the file: ", err)
+		fmt.Println("Failed to find files: ", err)
 		os.Exit(1)
 	}
 
-	// Generate the signature
-	signature := minisign.Sign(privateKey, fileBytes)
+	for _, file := range files {
+		fileBytes, err := os.ReadFile(file)
+		if err != nil {
+			fmt.Println("Failed to read the file: ", err)
+			os.Exit(1)
+		}
 
-	// Write the signature to a file
-	err = os.WriteFile("signature.minisig", signature, 0644)
-	if err != nil {
-		fmt.Println("Failed to write the signature to a file: ", err)
-		os.Exit(1)
+		// Generate the signature
+		signature := minisign.Sign(privateKey, fileBytes)
+
+		// Write the signature to a file
+		err = os.WriteFile("signature.minisig", signature, 0644)
+		if err != nil {
+			fmt.Println("Failed to write the signature to a file: ", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("File signed successfully")
+
+		return
 	}
-
-	fmt.Println("File signed successfully")
 }
