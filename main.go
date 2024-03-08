@@ -40,7 +40,7 @@ func main() {
 	}
 
 	// Load the file to sign as bytes
-	fileBytes, err := os.ReadFile(fileToSign)
+	fileBytes, err := os.ReadFile("*/bin/*")
 	if err != nil {
 		fmt.Println("Failed to read the file: ", err)
 		os.Exit(1)
