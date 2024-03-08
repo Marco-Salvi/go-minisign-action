@@ -2,28 +2,20 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
+
+	"aead.dev/minisign"
 )
 
 func main() {
-	// Get the minisign location from the env variable
-	minisignLocation := os.Getenv("MINISIGN_PATH")
 	// Get the file to sign from the env variable
 	fileToSign := os.Getenv("FILE_TO_SIGN_PATH")
 	// Get the INPUT_PASSWORD environment variable
 	inputPassword := os.Getenv("INPUT_PASSWORD")
-	// Get the INPUT_MINISIGN_KEY environment variable
-	inputMinisignKey := os.Getenv("INPUT_MINISIGN_KEY")
+	// Get the INPUT_RAW_PRIVATE_KEY environment variable
+	inputRawPrivateKey := os.Getenv("INPUT_RAW_PRIVATE_KEY")
 
 	// If any of the env variables are not set, print an error and exit
-	if minisignLocation == "" {
-		fmt.Println("Error: MINISIGN_PATH is not set")
-		os.Exit(1)
-	}
 	if fileToSign == "" {
 		fmt.Println("Error: FILE_TO_SIGN_PATH is not set")
 		os.Exit(1)
@@ -32,51 +24,37 @@ func main() {
 		fmt.Println("Error: INPUT_PASSWORD is not set")
 		os.Exit(1)
 	}
-	if inputMinisignKey == "" {
-		fmt.Println("Error: INPUT_MINISIGN_KEY is not set")
+	if inputRawPrivateKey == "" {
+		fmt.Println("Error: INPUT_RAW_PRIVATE_KEY is not set")
 		os.Exit(1)
 	}
 
 	// Env variables are set
 	fmt.Println("Env variables loaded successfully")
 
-	// Set the minisignKeyPath to the path of the minisign.key file in the .minisign directory in the user's home directory
-	minisignKeyPath := filepath.Join(os.Getenv("HOME"), ".minisign", "minisign.key")
-
-	// Get the directory part of minisignKeyPath
-	dir := filepath.Dir(minisignKeyPath)
-	// Create the directory, including any necessary parents, with mode 0755
-	err := os.MkdirAll(dir, 0755)
-	// If there's an error, print it and exit
+	// Decrypt the raw private key with the password
+	privateKey, err := minisign.DecryptKey(inputPassword, []byte(inputRawPrivateKey))
 	if err != nil {
-		fmt.Println("Error creating directory:", err)
+		fmt.Println("Failed to decrypt the private key: ", err)
 		os.Exit(1)
 	}
-	fmt.Println("Directory created successfully")
 
-	// Write the inputMinisignKey to the minisignKeyPath file with mode 0644
-	err = os.WriteFile(minisignKeyPath, []byte(inputMinisignKey), 0644)
-	// If there's an error, print it and exit
+	// Load the file to sign as bytes
+	fileBytes, err := os.ReadFile(fileToSign)
 	if err != nil {
-		fmt.Println("Error writing key to file:", err)
+		fmt.Println("Failed to read the file: ", err)
 		os.Exit(1)
 	}
-	fmt.Println("Key written to file successfully")
 
-	// Create a new reader with the inputPassword followed by a newline
-	r := strings.NewReader(inputPassword + "\n")
+	// Generate the signature
+	signature := minisign.Sign(privateKey, fileBytes)
 
-	// Create a new command to execute /minisign with the arguments passed to this program
-	cmd := exec.Command(minisignLocation, "-Sm", fileToSign)
-	// Set the command's stdin to the reader
-	cmd.Stdin = io.MultiReader(r)
-
-	// Run the command
-	err = cmd.Run()
-	// If there's an error, print it and exit
+	// Write the signature to a file
+	err = os.WriteFile("signature.minisig", signature, 0644)
 	if err != nil {
-		fmt.Println("Error running minisign:", err)
+		fmt.Println("Failed to write the signature to a file: ", err)
 		os.Exit(1)
 	}
-	fmt.Println("Minisign command executed successfully")
+
+	fmt.Println("File signed successfully")
 }
